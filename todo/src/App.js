@@ -46,47 +46,83 @@
 // }
 
 // let nextId = 3;
-// const initialTasks = [
-//   {id: 0, text: 'Visit Kafka Museum', done: true},
-//   {id: 1, text: 'Watch a puppet show', done: false},
-//   {id: 2, text: 'Lennon Wall pic', done: false},
-// ];
 
-import {useState} from "react" ;
+import {useState,useReducer} from "react" ;
 import TaskBox from "./TaskBox";
+
+const initialTasks = [
+  {id: 0, text: 'Visit Kafka Museum', done: true},
+  {id: 1, text: 'Watch a puppet show', done: false},
+  {id: 2, text: 'Lennon Wall pic', done: false},
+];
+
 
 export default function App(){
 
 
-const [works,setWork]=useState( [{id: 0, text: 'Visit Kafka Museum', done: true},
-{id: 1, text: 'Watch a puppet show', done: false},
-{id: 2, text: 'Lennon Wall pic', done: false}]);
+// const [works,setWork]=useState( [{id: 0, text: 'Visit Kafka Museum', done: true},
+// {id: 1, text: 'Watch a puppet show', done: false},
+// {id: 2, text: 'Lennon Wall pic', done: false}]);
 
-const [inputText,setInputText]=useState('');
+function taskReducer(works,action){
 
+  switch(action.type){
 
-function handleEdit(task){
+    case 'added':{return [...works,{id:action.id,text:action.text,done:false}]}
 
- setWork( works.map((work)=>{
-    if (work.id===task.id){
-      return task;
+    case 'changed':{
+      return works.map((w)=>{
+        if(w.id===action.task.id){
+          return action.task;
+        }
+        else{
+          return w;
+        }
+      } )
     }
-    else{
-      return work;
+
+    case 'deleted':{return works.filter(w=>w.id!==action.id)}
+    default: {
+      throw Error('Unknown action: ' + action.type);
     }
-  }))
+      
+  }
 
 }
 
-function handleDelete(id){
-  const filteredWorks = works.filter((work, index) => index !== id);
-  setWork(filteredWorks);
+const [inputText,setInputText]=useState('');
+
+const[works,dispatch]=useReducer(taskReducer,initialTasks)
+
+function handleEdit(task){
+
+//  setWork( works.map((work)=>{
+//     if (work.id===task.id){
+//       return task;
+//     }
+//     else{
+//       return work;
+//     }
+
+//   }))
+dispatch({type:'changed',task:task})
+
+}
+
+function handleDelete(WorkId){
+  // const filteredWorks = works.filter((work, index) => index !== id);
+  // setWork(filteredWorks);
+
+  dispatch({type:'deleted',id:WorkId})
 }
 
   function handeleWork(){
     if(inputText.trim()){
-      setWork([...works,{id:nextId++,text:inputText,done:false}])
+      // setWork([...works,{id:nextId++,text:inputText,done:false}])
+      dispatch({type:'added',id:nextId++,text:inputText})
     }
+
+    
 
 setInputText('')
   }
